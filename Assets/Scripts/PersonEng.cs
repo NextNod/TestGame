@@ -7,6 +7,7 @@ public class PersonEng : MonoBehaviour
     public static int HP { set; get; }
     private bool past = false;
     private bool shoot = false;
+    private bool start = true;
     private float sum = 0;
     private int jumps = 0;
 
@@ -27,14 +28,13 @@ public class PersonEng : MonoBehaviour
     Touch finger = new Touch();
 
     void Start() 
-    {
+    {        
+        PCameraTransform.DOMove(transform.position, 1);
         HP = 100;
-        spriteColor.enabled = PersonName.enabled = true;
         PersonName.text = StartGame.Name;
         rigidbody2D = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
         collider2D = GetComponent<BoxCollider2D>();
-        PCameraTransform.DOMove(transform.position, 1);
 
         switch (StartGame.color) 
         {
@@ -53,6 +53,13 @@ public class PersonEng : MonoBehaviour
     void Update()
     {
         if (DOTween.IsTweening(PCameraTransform)) return;
+
+        if (start)
+        {
+            spriteColor.enabled = PersonName.enabled = true;
+            start = false;
+        }
+
         sum += Time.deltaTime;
         bool touch;
         PCameraTransform.position = transform.position;
