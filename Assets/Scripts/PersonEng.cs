@@ -1,37 +1,41 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
+using DG.Tweening;
 using TMPro;
 
-public class MoveEng : MonoBehaviour
-{
-    public enum Weapon { Rocket, Pistol, Bow };
-    
+public class PersonEng : MonoBehaviour
+{   
     public static int HP { set; get; }
     private bool past = false;
     private bool shoot = false;
     private float sum = 0;
     private int jumps = 0;
 
-    public static Weapon selectedWeapon = Weapon.Rocket;
+    private new Rigidbody2D rigidbody2D;
+    private new BoxCollider2D collider2D;
+    private SpriteRenderer sprite;
+
     public float radius = 2;
     public float jump = 4;
+    public Vector2 startPosition;
     public GameObject crossHair;
-    public Button buttonRocket;
-    public Button buttonPistol;
-    public Button buttonBow;
     public Camera Camera;
+    public Transform PCameraTransform;
     public TextMeshProUGUI PersonName;
     public SpriteRenderer spriteColor;
     public GameObject Panel;
 
-    ColorBlock activeColor;
-    ColorBlock passiveColor;
     Touch finger = new Touch();
 
     void Start() 
     {
         HP = 100;
+        spriteColor.enabled = PersonName.enabled = true;
         PersonName.text = StartGame.Name;
+        rigidbody2D = GetComponent<Rigidbody2D>();
+        sprite = GetComponent<SpriteRenderer>();
+        collider2D = GetComponent<BoxCollider2D>();
+        PCameraTransform.DOMove(transform.position, 1);
+
         switch (StartGame.color) 
         {
             case StartGame.Color.Red:
@@ -44,38 +48,14 @@ public class MoveEng : MonoBehaviour
                 spriteColor.color = new Color(0, 0, 255);
                 break;
         }
-        activeColor = buttonRocket.colors;
-        passiveColor = buttonPistol.colors;
-
-        buttonRocket.onClick.AddListener(() => 
-        {
-            selectedWeapon = Weapon.Rocket;
-            buttonRocket.colors = activeColor;
-            buttonPistol.colors = passiveColor;
-            buttonBow.colors = passiveColor;
-        });
-        
-        buttonPistol.onClick.AddListener(() => 
-        {
-            selectedWeapon = Weapon.Pistol;
-            buttonRocket.colors = passiveColor;
-            buttonPistol.colors = activeColor;
-            buttonBow.colors = passiveColor;
-        });
-        
-        buttonBow.onClick.AddListener(() => 
-        {
-            selectedWeapon = Weapon.Bow;
-            buttonRocket.colors = passiveColor;
-            buttonPistol.colors = passiveColor;
-            buttonBow.colors = activeColor;
-        });
     }
 
     void Update()
     {
+        if (DOTween.IsTweening(PCameraTransform)) return;
         sum += Time.deltaTime;
         bool touch;
+        PCameraTransform.position = transform.position;
         if (Input.touchCount > 0)
         {
             finger = Input.GetTouch(0);
@@ -85,6 +65,7 @@ public class MoveEng : MonoBehaviour
                 shoot)
             {
                 shoot = true;
+                crossHair.SetActive(true);
                 Vector2 fingerPosition = Camera.main.ScreenToWorldPoint(finger.position);
                 crossHair.transform.position = new Ray2D(transform.position, fingerPosition).GetPoint(radius);
             }
@@ -94,39 +75,48 @@ public class MoveEng : MonoBehaviour
                     if (finger.position.x > (Screen.width + 40) / 2)
                     {
                         transform.position = Vector2.MoveTowards(transform.position, transform.position + transform.right, 2f * Time.deltaTime);
-                        GetComponent<SpriteRenderer>().flipX = true;
+                        sprite.flipX = true;
                     }
                     else if (finger.position.x < (Screen.width - 40) / 2)
                     {
                         transform.position = Vector2.MoveTowards(transform.position, transform.position + transform.right * -1, 2f * Time.deltaTime);
-                        GetComponent<SpriteRenderer>().flipX = false;
+                        sprite.flipX = false;
                     }
             }
         }
-        else touch = shoot = false;
-        crossHair.SetActive(shoot);
+        else touch = false;
 
         if (touch != past)
         {
             jumps++;
             if (past && shoot)
+            {
                 shoot = false;
+                crossHair.SetActive(false);
+                PersonName.enabled = spriteColor.enabled = false;
+                MainEng.EndTurn(gameObject);
+            }
         }    
 
         if(sum > 0.5f)
         { 
-            if (jumps > 2) GetComponent<Rigidbody2D>().AddForce(transform.up * jump, ForceMode2D.Impulse);
+            if (jumps > 2 && collider2D.IsTouchingLayers())
+                rigidbody2D.AddForce(transform.up * jump, ForceMode2D.Impulse);
+            
             sum = jumps = 0;
         }
         past = touch;
 
-        if (HP <= 0) 
+        if (HP <= 0 || transform.position.y < -5)
+        {
+            transform.DOMove(startPosition, 1);
             EnablePerson(false);
+        }
     }
 
     public void EnablePerson(bool enabled) 
     {
-        GetComponent<SpriteRenderer>().enabled = enabled;
+        sprite.enabled = enabled;
         spriteColor.enabled = enabled;
         PersonName.enabled = enabled;
         Panel.SetActive(!enabled);

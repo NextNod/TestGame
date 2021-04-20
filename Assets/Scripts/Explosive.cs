@@ -14,7 +14,7 @@ public class Explosive : MonoBehaviour
             {
                 float distance = Vector2.Distance(transform.position, Aim.transform.position);
                 int damage = 100 - (int)distance * 2;
-                MoveEng.HP -= damage;
+                PersonEng.HP -= damage;
             }
             else if (Aim.name.StartsWith("Enemy"))
             {

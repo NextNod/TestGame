@@ -6,7 +6,7 @@ public class Bullet : MonoBehaviour
     public int Damage = 25;
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject == Person) MoveEng.HP -= Damage;
+        if (collision.gameObject == Person) PersonEng.HP -= Damage;
         else if (collision.gameObject.name.StartsWith("Enemy")) EnemyEng.HP -= Damage;
         Destroy(gameObject);
     }

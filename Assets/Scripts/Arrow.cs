@@ -6,7 +6,7 @@ public class Arrow : MonoBehaviour
     {
         if (collision.gameObject.name.StartsWith("Person"))
         {
-            MoveEng.HP = 0;
+            PersonEng.HP = 0;
             Destroy(gameObject);
         }
         else if (collision.gameObject.name.StartsWith("Enemy"))

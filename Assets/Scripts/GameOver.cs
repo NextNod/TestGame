@@ -5,20 +5,28 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class GameOver : MonoBehaviour
 {
     private RewardedAd rewardedAd;
     private RectTransform Transform;
     private bool tween;
+    private bool show;
 
-    public Button ButtonYes;
-    public Button ButtonNo;
+    public TextMeshProUGUI text;
+    public GameObject ButtonYes;
+    public GameObject ButtonNo;
+    public GameObject Person;
+
     void Start()
     {
-        // Ad();
+        Person.GetComponent<PersonEng>().enabled = false;
         Transform = ButtonYes.GetComponent<RectTransform>();
         DOTween.SetTweensCapacity(500, 50);
+        WaitWindow(true);
+        show = false;
+        Ad();
     }
 
     void Update()
@@ -31,72 +39,78 @@ public class GameOver : MonoBehaviour
                 Transform.DOMoveX(1115, 0.15f);
             tween = !tween;
         }
+
+        if (rewardedAd.IsLoaded() && show)
+            rewardedAd.Show();
     }
 
     void Ad() 
     {
-        rewardedAd = new RewardedAd("ca-app-pub-4583590981102835~2970632670");
+        rewardedAd = new RewardedAd("ca-app-pub-3940256099942544/5224354917");
         AdRequest request = new AdRequest.Builder().Build();
+        rewardedAd.LoadAd(request);
 
-        this.rewardedAd.OnAdLoaded += HandleRewardedAdLoaded;
-        this.rewardedAd.OnAdFailedToLoad += HandleRewardedAdFailedToLoad;
-        this.rewardedAd.OnAdOpening += HandleRewardedAdOpening;
-        this.rewardedAd.OnAdFailedToShow += HandleRewardedAdFailedToShow;
-        this.rewardedAd.OnAdClosed += HandleRewardedAdClosed;
+        rewardedAd.OnAdLoaded += HandleRewardedAdLoaded;
+        rewardedAd.OnAdFailedToLoad += HandleRewardedAdFailedToLoad;
+        rewardedAd.OnAdOpening += HandleRewardedAdOpening;
+        rewardedAd.OnAdFailedToShow += HandleRewardedAdFailedToShow;
+        rewardedAd.OnAdClosed += HandleRewardedAdClosed;
 
         rewardedAd.OnUserEarnedReward += (o, e) =>
         {
-            var gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
-            foreach (GameObject gameObject in gameObjects)
-                if (gameObject.name == "Person")
-                    gameObject.GetComponent<MoveEng>().EnablePerson(true);
+            PersonEng.HP = 50;
+            Person.GetComponent<PersonEng>().enabled = true;
+            Person.GetComponent<PersonEng>().EnablePerson(true);
+            gameObject.SetActive(false);
         };
 
-        ButtonYes.onClick.AddListener(() =>
+        ButtonYes.GetComponent<Button>().onClick.AddListener(() =>
         {
-            rewardedAd.LoadAd(request);
+            show = true;
+            WaitWindow(false);
         });
 
-        ButtonNo.onClick.AddListener(() =>
+        ButtonNo.GetComponent<Button>().onClick.AddListener(() =>
         {
-            var gameObjects = SceneManager.GetActiveScene().GetRootGameObjects();
-            foreach (GameObject gameObject in gameObjects)
-                if (gameObject.name == "Person")
-                    gameObject.GetComponent<MoveEng>().EnablePerson(true);
+            Person.GetComponent<PersonEng>().EnablePerson(true);
             Scene mainScene = SceneManager.GetActiveScene();
             SceneManager.LoadScene(0);
         });
+    }
+
+    private void WaitWindow(bool enable) 
+    {
+        if (enable) text.text = "Продолжить?";
+        else text.text = "Подождите";
+
+        ButtonNo.SetActive(enable);
+        ButtonYes.SetActive(enable);
     }
 
     public void HandleRewardedAdLoaded(object sender, EventArgs args)
     {
         MonoBehaviour.print("HandleRewardedAdLoaded event received");
     }
-
     public void HandleRewardedAdFailedToLoad(object sender, AdErrorEventArgs args)
     {
         MonoBehaviour.print(
             "HandleRewardedAdFailedToLoad event received with message: "
                              + args.Message);
     }
-
     public void HandleRewardedAdOpening(object sender, EventArgs args)
     {
         MonoBehaviour.print("HandleRewardedAdOpening event received");
     }
-
     public void HandleRewardedAdFailedToShow(object sender, AdErrorEventArgs args)
     {
         MonoBehaviour.print(
             "HandleRewardedAdFailedToShow event received with message: "
                              + args.Message);
     }
-
     public void HandleRewardedAdClosed(object sender, EventArgs args)
     {
         MonoBehaviour.print("HandleRewardedAdClosed event received");
     }
-
     public void HandleUserEarnedReward(object sender, Reward args)
     {
         string type = args.Type;

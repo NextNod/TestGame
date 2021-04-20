@@ -15,17 +15,17 @@ public class Shoot : MonoBehaviour
         GameObject temp = new GameObject();
         Quaternion rotarion = new Quaternion(0, 0, Vector2.Angle(Person.position, transform.position), 0);
         
-        switch (MoveEng.selectedWeapon)
+        switch (StartGame.selectedWeapon)
         {
-            case MoveEng.Weapon.Rocket:
+            case StartGame.Weapon.Rocket:
                 temp = Instantiate(rocket, transform.position, rotarion);
                 temp.GetComponent<Rigidbody2D>().AddForce(transform.localPosition * 50, ForceMode2D.Force);
                 break;
-            case MoveEng.Weapon.Pistol:
+            case StartGame.Weapon.Pistol:
                 temp = Instantiate(bullet, transform.position, rotarion);
                 temp.GetComponent<Rigidbody2D>().AddForce(transform.localPosition * 100, ForceMode2D.Force);
                 break;
-            case MoveEng.Weapon.Bow:
+            case StartGame.Weapon.Bow:
                 temp = Instantiate(arrow, transform.position, rotarion);
                 temp.GetComponent<Rigidbody2D>().AddForce(transform.localPosition * 50, ForceMode2D.Force);
                 break;
