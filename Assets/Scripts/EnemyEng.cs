@@ -7,6 +7,7 @@ public class EnemyEng : MonoBehaviour
 {
     private SpriteRenderer spriteRenderer;
     private Collider2D lastCollider2D;
+    private Collider2D personCollider;
     private new BoxCollider2D collider2D;
     private new Rigidbody2D rigidbody2D;
     
@@ -26,6 +27,7 @@ public class EnemyEng : MonoBehaviour
         rigidbody2D = GetComponent<Rigidbody2D>();
         collider2D = GetComponent<BoxCollider2D>();
         lastCollider2D = GetComponent<BoxCollider2D>();
+        personCollider = Person.GetComponent<Collider2D>();
         Camera.transform.DOMove(transform.position, 1);
     }
 
@@ -53,6 +55,9 @@ public class EnemyEng : MonoBehaviour
             AI();
             if(!collider2D.IsTouching(lastCollider2D))
                 transform.position = Vector2.MoveTowards(transform.position, transform.position + (transform.right * (isRight ? 1 : -1)), 2f * Time.deltaTime);
+            if (collider2D.IsTouching(personCollider))
+                MainEng.EndTurn(gameObject);
+
             spriteRenderer.flipX = isRight;
         }
         if (HP <= 0) Destroy(gameObject);

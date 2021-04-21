@@ -7,7 +7,6 @@ public class PersonEng : MonoBehaviour
     public static int HP { set; get; }
     private bool past = false;
     private bool shoot = false;
-    private bool start = true;
     private float sum = 0;
     private int jumps = 0;
 
@@ -53,12 +52,8 @@ public class PersonEng : MonoBehaviour
     void Update()
     {
         if (DOTween.IsTweening(PCameraTransform)) return;
-
-        if (start)
-        {
-            spriteColor.enabled = PersonName.enabled = true;
-            start = false;
-        }
+        
+        spriteColor.enabled = PersonName.enabled = true;
 
         sum += Time.deltaTime;
         bool touch;
